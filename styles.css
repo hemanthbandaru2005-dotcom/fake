@@ -1,0 +1,137 @@
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    transition:0.3s;
+}
+
+/* LOGIN PAGE */
+.login-bg{
+    background:linear-gradient(135deg,#141e30,#243b55);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.login-box{
+    background:rgba(255,255,255,0.1);
+    padding:30px;
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+    text-align:center;
+    color:white;
+    width:300px;
+    animation:fadeIn 1s;
+}
+
+.login-box input{
+    width:90%;
+    padding:10px;
+    margin:10px;
+    border:none;
+    border-radius:5px;
+}
+
+.login-box button{
+    padding:10px 20px;
+    background:#00c6ff;
+    border:none;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.hint{
+    font-size:12px;
+    opacity:0.7;
+}
+
+/* MAIN PAGE */
+.main-bg{
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+    min-height:100vh;
+    color:white;
+}
+
+.container{
+    width:420px;
+    margin:80px auto;
+    background:rgba(255,255,255,0.1);
+    padding:30px;
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+    text-align:center;
+    animation:fadeIn 1s;
+}
+
+/* UPLOAD */
+.upload{
+    border:2px dashed white;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    transition:0.3s;
+}
+
+/* IMAGE PREVIEW */
+#preview{
+    width:100%;
+    display:none;
+    margin-top:10px;
+    border-radius:10px;
+}
+
+/* BUTTON */
+button{
+    padding:12px 20px;
+    margin:5px;
+    background:#00c6ff;
+    border:none;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#0072ff;
+}
+
+/* RESULT */
+#result{
+    margin-top:20px;
+    font-weight:bold;
+}
+
+/* HISTORY */
+#historyBox{
+    margin-top:20px;
+    font-size:14px;
+}
+
+/* DARK MODE */
+.light{
+    background:#f4f4f4 !important;
+    color:black !important;
+}
+
+/* TOGGLE BUTTON */
+.toggle{
+    position:absolute;
+    top:20px;
+    right:20px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+/* ANIMATION */
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
