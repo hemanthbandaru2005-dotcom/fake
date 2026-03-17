@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Intelligent Certificate Authenticity Analyzer 👁️</title>
+
+<!-- OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+
+<!-- QR -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="script.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+}
+
+/* LOGIN */
+.login-bg{
+    background:linear-gradient(135deg,#141e30,#243b55);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.login-box{
+    background:rgba(255,255,255,0.1);
+    padding:30px;
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+    text-align:center;
+    color:white;
+}
+
+.login-box input{
+    width:90%;
+    padding:10px;
+    margin:10px;
+    border:none;
+    border-radius:5px;
+}
+
+/* MAIN */
+.main-bg{
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+    min-height:100vh;
+    color:white;
+}
+
+.container{
+    width:420px;
+    margin:60px auto;
+    background:rgba(255,255,255,0.1);
+    padding:25px;
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+    text-align:center;
+}
+
+/* UPLOAD */
+.upload{
+    border:2px dashed white;
+    padding:20px;
+    border-radius:10px;
+}
+
+#preview{
+    width:100%;
+    display:none;
+    margin-top:10px;
+    border-radius:10px;
+}
+
+button{
+    padding:10px;
+    margin:5px;
+    background:#00c6ff;
+    border:none;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#result{
+    margin-top:15px;
+    font-weight:bold;
+}
+
+/* QR */
+#reader{
+    width:280px;
+    margin:10px auto;
+}
+</style>
+</head>
+
+<body class="login-bg">
+
+<!-- LOGIN -->
+<div id="loginPage" class="login-box">
+    <h2>🔐 Login</h2>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- MAIN -->
+<div id="mainPage" class="main-bg" style="display:none;">
+<div class="container">
+
+<h2>👁️ Certificate Analyzer</h2>
+
+<div class="upload">
+<input type="file" id="file" onchange="previewFile()">
+</div>
+
+<img id="preview">
+
+<button onclick="analyze()">Analyze Certificate</button>
+<button onclick="startQR()">Scan QR</button>
+
+<div id="reader"></div>
+
+<h3 id="result"></h3>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+</div>
+
+<script>
+
+// LOGIN
+function login(){
+    let user = document.getElementById("user");
+    let pass = document.getElementById("pass");
+    let loginPage = document.getElementById("loginPage");
+    let mainPage = document.getElementById("mainPage");
+    if(user.value && pass.value){
+        loginPage.style.display="none";
+        mainPage.style.display="block";
+        document.body.classList.remove("login-bg");
+    }else{
+        alert("Enter login details");
+    }
+}
+
+// LOGOUT
+function logout(){
+    location.reload();
+}
+
+// PREVIEW
+function previewFile(){
+    let fileInput = document.getElementById("file");
+    let preview = document.getElementById("preview");
+    let file = fileInput.files[0];
+    if(file){
+        preview.src = URL.createObjectURL(file);
+        preview.style.display="block";
+    }
+}
+
+// OCR ANALYSIS (FIXED)
+function analyze(){
+
+    let fileInput = document.getElementById("file");
+    let result = document.getElementById("result");
+
+    if(fileInput.files.length === 0){
+        result.innerHTML="⚠️ Upload certificate first!";
+        result.style.color="yellow";
+        return;
+    }
+
+    let file = fileInput.files[0];
+
+    result.innerHTML="⏳ Reading certificate...";
+
+    Tesseract.recognize(file,'eng')
+    .then(({ data: { text } }) => {
+
+        let lower = text.toLowerCase();
+        console.log(text);
+
+        let score = 0;
+        let issues = [];
+
+        // SMART CHECKS
+        if(lower.includes("board") || lower.includes("education")) score++;
+        else issues.push("Board not clear");
+
+        if(lower.includes("certificate")) score++;
+        else issues.push("Certificate text missing");
+
+        if(text.match(/\d{6,12}/)) score++;
+        else issues.push("Roll number missing");
+
+        if(text.match(/\d{2}\/\d{2}\/\d{4}/)) score++;
+        else issues.push("Date missing");
+
+        // RESULT
+        if(score >= 2){
+            result.innerHTML="✅ LIKELY ORIGINAL CERTIFICATE";
+            result.style.color="#00ffcc";
+        }else{
+            result.innerHTML="❌ SUSPICIOUS CERTIFICATE<br><br>"+issues.join("<br>");
+            result.style.color="red";
+        }
+
+    }).catch(()=>{
+        result.innerHTML="❌ Error reading file!";
+        result.style.color="red";
+    });
+}
+
+
+// QR SCANNER (STABLE)
+let qr;
+
+function startQR(){
+
+    let result = document.getElementById("result");
+
+    document.getElementById("reader").innerHTML="";
+
+    qr = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras().then(devices=>{
+
+        if(devices.length){
+
+            qr.start(
+                devices[0].id,
+                {
+                    fps:10,
+                    qrbox:250
+                },
+                text=>{
+                    result.innerHTML="✅ QR DETECTED<br>"+text;
+                    result.style.color="#00ffcc";
+                    qr.stop();
+                },
+                () => {}
+            );
+
+        }else{
+            result.innerHTML="❌ No camera found";
+        }
+
+    }).catch(()=>{
+        result.innerHTML="❌ Allow camera permission!";
+    });
+}
+
+</script>
+
+</body>
+</html>
